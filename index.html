@@ -13,8 +13,8 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <style>
   html,body{margin:0;height:100%;background:#182233;color:#e8ecf3;font:16px -apple-system,system-ui,sans-serif}
-  #app{position:fixed;left:0;right:0;top:0;bottom:env(safe-area-inset-bottom);width:100%;height:calc(100% - env(safe-area-inset-bottom));border:0;display:none;background:#182233}
-  #info{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;box-sizing:border-box}
+  #app{position:fixed;left:0;right:0;top:0;bottom:env(safe-area-inset-bottom);width:100%;height:calc(100% - env(safe-area-inset-bottom));border:0;visibility:hidden;background:#182233}
+  #info{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;box-sizing:border-box;background:#182233;z-index:2}
   #info img{width:96px;height:96px;border-radius:22px}
   #info b{color:#f0a92e}
   a{color:#f0a92e}
@@ -35,9 +35,17 @@
   if (!k) {
     txt.innerHTML = 'Chybí klíč.<br>Odkaz s klíčem vytvoříš v tabulce:<br><b>Rozpis → Appka: nový klíč</b>.';
   } else if (plocha) {
-    var f = document.getElementById('app');
-    f.src = APP + '?k=' + encodeURIComponent(k);
-    f.onload = function () { f.style.display = 'block'; document.getElementById('info').style.display = 'none'; };
+    var f = document.getElementById('app'), url = APP + '?k=' + encodeURIComponent(k), hotovo = false;
+    // Appku ukázat hned, jak je stránka v rámu – nečekat na načtení všech souborů (písma apod.),
+    // na iPadu to umělo trvat i desítky sekund. Appka má vlastní „Načítám…“.
+    var ukaz = function () {
+      if (hotovo) return; hotovo = true;
+      f.style.visibility = 'visible';
+      document.getElementById('info').style.display = 'none';
+    };
+    f.onload = ukaz;
+    f.src = url;
+    setTimeout(ukaz, 2500);
   } else {
     txt.innerHTML = 'Teď dej <b>Sdílet → Přidat na plochu</b>.<br><br>Appku pak otevírej ikonou z plochy –<br>poběží na celou obrazovku.<br><br>' +
       '<a href="' + APP + '?k=' + encodeURIComponent(k) + '">nebo otevřít teď v prohlížeči</a>';
